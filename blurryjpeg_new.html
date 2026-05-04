@@ -1,0 +1,1796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Blurry JPEG</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #1a1a2e;
+            --card-bg: #16213e;
+            --card-border: #e94560;
+            --card-border2: #0f3460;
+            --text-bright: #eaeaea;
+            --text-mid: #a0a0b0;
+            --text-dim: #505068;
+            --accent: #e94560;
+            --accent2: #53d8fb;
+            --pixel-size: 3px;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text-mid);
+            font-family: 'Press Start 2P', monospace;
+            min-height: 100vh;
+            image-rendering: pixelated;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(0,0,0,0.03) 2px,
+                    rgba(0,0,0,0.03) 4px
+            );
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .pixel-border {
+            border: var(--pixel-size) solid var(--card-border);
+            box-shadow:
+                    0 0 0 var(--pixel-size) var(--bg),
+                    0 0 0 calc(var(--pixel-size)*2) var(--card-border2),
+                    4px 4px 0 calc(var(--pixel-size)*2) rgba(0,0,0,0.5);
+        }
+
+        .pixel-border-dim {
+            border: var(--pixel-size) solid var(--text-dim);
+            box-shadow:
+                    0 0 0 var(--pixel-size) var(--bg),
+                    0 0 0 calc(var(--pixel-size)*2) #2a2a4a,
+                    4px 4px 0 calc(var(--pixel-size)*2) rgba(0,0,0,0.5);
+        }
+
+        /* HOME */
+        #home { max-width: 700px; margin: 0 auto; padding: 3rem 2rem; }
+
+        .home-header { text-align: center; margin-bottom: 3rem; }
+
+        .home-header h1 {
+            font-size: 20px;
+            color: var(--text-bright);
+            line-height: 1.6;
+            margin-bottom: 1.2rem;
+            text-shadow: 3px 3px 0 var(--accent);
+        }
+
+        .select-label {
+            font-size: 10px;
+            color: var(--accent);
+            letter-spacing: 0.1em;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        @media (max-width: 500px) { .card-grid { grid-template-columns: 1fr; } }
+
+        .game-card {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: transform 0.1s;
+            position: relative;
+        }
+        .game-card:hover {
+            transform: translate(-2px, -2px);
+            box-shadow:
+                    0 0 0 var(--pixel-size) var(--bg),
+                    0 0 0 calc(var(--pixel-size)*2) var(--card-border2),
+                    8px 8px 0 calc(var(--pixel-size)*2) rgba(0,0,0,0.6) !important;
+        }
+
+        .card-num { font-size: 18px; color: var(--accent); margin-bottom: 1rem; text-shadow: 2px 2px 0 rgba(0,0,0,0.5); }
+
+        .card-title {
+            font-size: 10px;
+            color: var(--text-bright);
+            line-height: 2;
+            margin-bottom: 1.2rem;
+            min-height: 50px;
+        }
+
+        .card-divider { height: var(--pixel-size); background: var(--card-border2); margin-bottom: 1rem; }
+
+        .card-tag {
+            font-size: 9px;
+            color: var(--accent2);
+            letter-spacing: 0.08em;
+        }
+
+        /* GAME VIEW */
+        #game-view { display: none; max-width: 760px; margin: 0 auto; padding: 2rem; }
+
+        .back {
+            background: none; border: none; color: var(--text-dim);
+            font-family: 'Press Start 2P', monospace;
+            font-size: 9px;
+            cursor: pointer; margin-bottom: 2rem; padding: 0; letter-spacing: 0.05em;
+        }
+        .back:hover { color: var(--text-mid); }
+
+        .game-card-header { background: var(--card-bg); padding: 1.5rem; margin-bottom: 1.5rem; }
+
+        .prompt-label {
+            font-size: 9px;
+            color: var(--accent); letter-spacing: 0.12em; margin-bottom: 10px;
+        }
+
+        .prompt-text {
+            font-size: 13px;
+            color: var(--text-bright); line-height: 2;
+        }
+
+        /* SPOT GAME */
+        .spot-intro {
+            font-size: 10px;
+            color: var(--text-mid); line-height: 2.2; margin-bottom: 1.5rem;
+        }
+
+        .score-bar {
+            font-size: 10px;
+            color: var(--text-dim); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 8px;
+        }
+        .score-bar .hits { color: var(--accent2); }
+        .score-pips { display: flex; gap: 4px; }
+        .pip { width: 14px; height: 14px; background: #0a0a1a; border: 2px solid var(--text-dim); }
+        .pip.filled { background: var(--accent2); border-color: var(--accent2); }
+
+        .paragraphs { display: flex; flex-direction: column; gap: 1.5rem; margin-bottom: 1.5rem; }
+
+        .para-block { background: var(--card-bg); padding: 1.2rem 1.5rem; }
+
+        .para-label {
+            font-size: 9px;
+            color: var(--accent); letter-spacing: 0.15em; margin-bottom: 12px;
+        }
+
+        .para-text {
+            font-size: 13px;
+            color: var(--text-mid); line-height: 2.2; font-family: monospace;
+        }
+
+        .para-text .clickable {
+                cursor: pointer; color: var(--text-mid);
+                transition: color 0.1s;
+        }
+        .para-text .clickable:hover { color: var(--text-bright); border-color: var(--accent2); }
+        .para-text .clickable.hit { color: var(--accent2); border-color: var(--accent2); text-shadow: 0 0 8px var(--accent2); }
+        .para-text .clickable.miss { color: var(--text-dim); border-color: transparent; text-decoration: line-through; }
+
+        .citation {
+            font-size: 11px;
+            color: var(--text-dim); margin-top: 12px; font-style: italic; font-family: monospace;
+        }
+
+        .spot-result { display: none; margin-top: 1.5rem; }
+        .spot-result.show { display: block; animation: fadein 0.4s ease; }
+
+        .result-card { background: var(--card-bg); padding: 1.5rem; }
+
+        .result-title {
+            font-size: 11px;
+            color: var(--accent2); margin-bottom: 1rem; text-shadow: 2px 2px 0 rgba(0,0,0,0.5);
+        }
+
+        .result-body {
+            font-size: 13px;
+            color: var(--text-mid); line-height: 2.2; font-family: monospace;
+        }
+
+        /* PREDICT GAME */
+        .predict-intro {
+            font-size: 10px;
+            color: var(--text-mid); line-height: 2.2; margin-bottom: 1.5rem;
+        }
+
+        .predict-options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 1.5rem; }
+
+        .predict-opt {
+            background: var(--card-bg);
+            border: var(--pixel-size) solid var(--text-dim);
+            color: var(--text-mid);
+            font-family: monospace;
+            font-size: 13px;
+            text-align: left; padding: 12px 14px; cursor: pointer;
+            line-height: 1.8; transition: border-color 0.1s, color 0.1s; width: 100%;
+        }
+        .predict-opt:hover { border-color: var(--accent2); color: var(--text-bright); }
+        .predict-opt.wrong { border-color: #1a1a2e; color: var(--text-dim); pointer-events: none; }
+        .predict-opt.revealed-correct {
+            border-color: var(--accent2); color: var(--text-bright);
+            background: #0a1628; pointer-events: none;
+            box-shadow: 0 0 12px rgba(83,216,251,0.15);
+        }
+
+        .feedback { display: none; background: var(--card-bg); padding: 1.2rem 1.5rem; }
+        .feedback.show { display: block; animation: fadein 0.4s ease; }
+
+        .feedback-label {
+            font-size: 10px;
+            margin-bottom: 10px;
+        }
+        .feedback-label.correct { color: var(--accent2); }
+        .feedback-label.wrong { color: var(--accent); }
+
+        .feedback-body {
+            font-size: 13px;
+            color: var(--text-mid); line-height: 2.2; font-family: monospace; margin-bottom: 1rem;
+        }
+
+        .thesis-block { display: none; background: var(--card-bg); padding: 1.2rem 1.5rem; margin-top: 1rem; }
+        .thesis-block.show { display: block; animation: fadein 0.5s ease 0.2s both; }
+
+        .thesis-label {
+            font-size: 9px;
+            color: var(--accent); margin-bottom: 8px; letter-spacing: 0.1em;
+        }
+
+        .thesis-body {
+            font-size: 13px;
+            color: var(--text-mid); line-height: 2.2; font-family: monospace; font-style: italic;
+        }
+
+        @keyframes fadein { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* ============================================
+           COUNT THE LIMBS — Steyerl SVG body game
+           ============================================ */
+        .limbs-stage {
+            background: var(--card-bg);
+            padding: 1.2rem;
+            margin-bottom: 1.5rem;
+            box-shadow:
+                0 0 0 var(--pixel-size) var(--bg),
+                0 0 0 calc(var(--pixel-size)*2) var(--card-border2),
+                4px 4px 0 calc(var(--pixel-size)*2) rgba(0,0,0,0.5);
+            border: var(--pixel-size) solid var(--text-dim);
+        }
+        .limbs-caption {
+            font-size: 9px;
+            color: var(--accent);
+            letter-spacing: 0.15em;
+            margin-bottom: 12px;
+            font-family: 'Press Start 2P', monospace;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .limbs-caption .prompt-quote {
+            color: var(--text-mid);
+            font-style: italic;
+            text-transform: none;
+            letter-spacing: 0.05em;
+        }
+        .limbs-svg-wrap {
+            background: #0a0a1a;
+            padding: 1rem;
+            position: relative;
+            text-align: center;
+            border: 2px solid #2a2a4a;
+        }
+        .limbs-svg-wrap svg {
+            max-width: 100%;
+            height: auto;
+            image-rendering: pixelated;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .limb-target {
+            cursor: pointer;
+            transition: all 0.15s;
+            fill: transparent;
+            stroke: transparent;
+            stroke-width: 3;
+        }
+        .limb-target.found {
+            fill: rgba(83, 216, 251, 0.3);
+            stroke: var(--accent2);
+            stroke-width: 4;
+            stroke-dasharray: none;
+            cursor: default;
+            animation: limbpulse 0.6s ease;
+        }
+        @keyframes limbpulse {
+            0% { stroke-width: 3; opacity: 0.5; }
+            50% { stroke-width: 8; opacity: 1; }
+            100% { stroke-width: 4; opacity: 1; }
+        }
+        .limb-target.miss-flash {
+            fill: rgba(233, 69, 96, 0.3);
+            stroke: var(--accent);
+        }
+
+        .limb-findings {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 2px dashed var(--text-dim);
+            font-family: monospace;
+            font-size: 12px;
+            color: var(--text-mid);
+            line-height: 1.9;
+            min-height: 60px;
+        }
+        .limb-findings .placeholder {
+            font-style: italic;
+            color: var(--text-dim);
+        }
+        .limb-findings .finding {
+            display: block;
+            padding: 4px 0;
+            animation: fadein 0.4s ease;
+        }
+        .limb-findings .finding strong {
+            color: var(--accent2);
+            font-family: 'Press Start 2P', monospace;
+            font-size: 9px;
+            letter-spacing: 0.1em;
+            margin-right: 8px;
+        }
+
+        .limbs-round-tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 1rem;
+            border: 2px solid var(--text-dim);
+        }
+        .limbs-tab {
+            flex: 1;
+            background: var(--card-bg);
+            border: none;
+            border-right: 2px solid var(--text-dim);
+            padding: 10px;
+            color: var(--text-dim);
+            font-family: 'Press Start 2P', monospace;
+            font-size: 9px;
+            letter-spacing: 0.1em;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .limbs-tab:last-child { border-right: none; }
+        .limbs-tab.active {
+            background: var(--accent);
+            color: #0a0a1a;
+        }
+        .limbs-tab.completed {
+            color: var(--accent2);
+        }
+        .limbs-tab.completed::after {
+            content: ' ✓';
+            color: var(--accent2);
+        }
+        .limbs-tab.active.completed {
+            background: var(--accent2);
+            color: #0a0a1a;
+        }
+        .limbs-tab:hover:not(.active) {
+            background: #2a2a4a;
+            color: var(--text-bright);
+        }
+
+        /* ============================================
+           CONTEXT COLLAPSE — Dreyfus Winograd-schema game
+           ============================================ */
+        .ctx-stage {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: var(--pixel-size) solid var(--text-dim);
+            box-shadow:
+                0 0 0 var(--pixel-size) var(--bg),
+                0 0 0 calc(var(--pixel-size)*2) var(--card-border2),
+                4px 4px 0 calc(var(--pixel-size)*2) rgba(0,0,0,0.5);
+        }
+        .ctx-round-label {
+            font-size: 9px;
+            color: var(--accent);
+            letter-spacing: 0.15em;
+            margin-bottom: 14px;
+        }
+        .ctx-sentence {
+            font-size: 14px;
+            color: var(--text-bright);
+            line-height: 2;
+            font-family: monospace;
+            margin-bottom: 1.2rem;
+            padding: 0.8rem 1rem;
+            background: #0a0a1a;
+            border-left: var(--pixel-size) solid var(--accent2);
+        }
+        .ctx-sentence .pronoun-hl {
+            color: var(--accent2);
+            background: rgba(83,216,251,0.12);
+            padding: 1px 4px;
+            font-weight: bold;
+        }
+        .ctx-question {
+            font-size: 11px;
+            color: var(--text-mid);
+            line-height: 1.9;
+            margin-bottom: 1rem;
+            letter-spacing: 0.05em;
+        }
+        .ctx-choices {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .ctx-choice {
+            background: var(--card-bg);
+            border: var(--pixel-size) solid var(--text-dim);
+            color: var(--text-bright);
+            font-family: monospace;
+            font-size: 13px;
+            text-align: left;
+            padding: 12px 14px;
+            cursor: pointer;
+            line-height: 1.7;
+            transition: all 0.15s;
+        }
+        .ctx-choice:hover {
+            border-color: var(--accent2);
+            transform: translate(-1px, -1px);
+        }
+        .ctx-choice.correct {
+            border-color: var(--accent2);
+            background: #0a1628;
+            color: var(--accent2);
+            pointer-events: none;
+        }
+        .ctx-choice.incorrect {
+            border-color: var(--accent);
+            background: #28101a;
+            color: var(--accent);
+            pointer-events: none;
+        }
+        .ctx-choice.dimmed {
+            opacity: 0.3;
+            pointer-events: none;
+        }
+        .ctx-progress-tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 1rem;
+        }
+        .ctx-progress-tab {
+            flex: 1;
+            height: 8px;
+            background: #0a0a1a;
+            border: 2px solid var(--text-dim);
+        }
+        .ctx-progress-tab.complete-correct { background: var(--accent2); border-color: var(--accent2); }
+        .ctx-progress-tab.complete-wrong { background: var(--accent); border-color: var(--accent); }
+        .ctx-progress-tab.current { border-color: var(--text-bright); }
+        .ctx-ai-comparison {
+            margin-top: 1.5rem;
+            padding: 1rem 1.2rem;
+            background: #0a0a1a;
+            border: 2px dashed var(--text-dim);
+            font-family: monospace;
+            font-size: 12px;
+            color: var(--text-mid);
+            line-height: 1.9;
+            display: none;
+        }
+        .ctx-ai-comparison.show { display: block; animation: fadein 0.4s ease; }
+        .ctx-ai-comparison .ai-label {
+            color: var(--accent);
+            font-family: 'Press Start 2P', monospace;
+            font-size: 9px;
+            letter-spacing: 0.1em;
+            margin-bottom: 8px;
+            display: block;
+        }
+        .ctx-ai-comparison .ai-pick {
+            color: var(--accent2);
+            font-weight: bold;
+        }
+        .ctx-ai-comparison .ai-pick.wrong { color: var(--accent); }
+        .ctx-next-btn {
+            display: none;
+            margin-top: 1.2rem;
+            background: var(--accent);
+            border: none;
+            color: #0a0a1a;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 10px;
+            padding: 12px 20px;
+            cursor: pointer;
+            letter-spacing: 0.1em;
+            transition: all 0.1s;
+        }
+        .ctx-next-btn:hover { transform: translate(-2px, -2px); box-shadow: 4px 4px 0 rgba(0,0,0,0.5); }
+        .ctx-next-btn.show { display: inline-block; }
+
+        .ctx-scoreboard {
+            background: #0a0a1a;
+            padding: 1rem;
+            margin-bottom: 1.2rem;
+            display: flex;
+            justify-content: space-around;
+            border: 2px solid var(--text-dim);
+            font-family: 'Press Start 2P', monospace;
+            font-size: 9px;
+            letter-spacing: 0.1em;
+        }
+        .ctx-score-col { text-align: center; }
+        .ctx-score-col .label { color: var(--text-dim); margin-bottom: 8px; display: block; }
+        .ctx-score-col .you-num { color: var(--accent2); font-size: 16px; }
+        .ctx-score-col .ai-num { color: var(--accent); font-size: 16px; }
+
+        /* ============================================
+           HUTTER VAULT — compression input
+           ============================================ */
+        .vault-passage {
+            background: var(--card-bg);
+            padding: 1.2rem 1.5rem;
+            margin-bottom: 1rem;
+            font-family: monospace;
+            font-size: 13px;
+            color: var(--text-mid);
+            line-height: 2;
+        }
+        .vault-passage-label {
+            font-size: 9px;
+            color: var(--accent);
+            letter-spacing: 0.15em;
+            margin-bottom: 10px;
+            font-family: 'Press Start 2P', monospace;
+        }
+        .vault-budget-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 8px;
+            font-size: 9px;
+            letter-spacing: 0.1em;
+            color: var(--text-dim);
+        }
+        .vault-budget-row .used { color: var(--accent2); font-size: 11px; }
+        .vault-budget-row .used.over { color: var(--accent); }
+        .vault-input {
+            width: 100%;
+            background: #0a0a1a;
+            border: var(--pixel-size) solid var(--text-dim);
+            color: var(--text-bright);
+            font-family: monospace;
+            font-size: 14px;
+            padding: 14px;
+            outline: none;
+            line-height: 1.6;
+            min-height: 80px;
+            resize: vertical;
+            letter-spacing: 0.02em;
+        }
+        .vault-input:focus { border-color: var(--accent2); }
+        .vault-input:disabled { opacity: 0.5; }
+        .vault-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+        .vault-btn {
+            background: var(--accent2);
+            border: var(--pixel-size) solid var(--accent2);
+            color: #0a0a1a;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 10px;
+            padding: 12px 18px;
+            cursor: pointer;
+            letter-spacing: 0.1em;
+            transition: transform 0.1s;
+        }
+        .vault-btn:hover { transform: translate(-2px, -2px); }
+        .vault-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+        .vault-btn.next-btn {
+            background: var(--card-bg);
+            color: var(--accent2);
+            display: none;
+        }
+        .vault-btn.next-btn.show { display: inline-block; }
+        .vault-strategies {
+            display: none;
+            margin-top: 1.5rem;
+        }
+        .vault-strategies.show { display: block; animation: fadein 0.4s ease; }
+        .vault-strategy {
+            background: var(--card-bg);
+            padding: 1rem 1.2rem;
+            margin-bottom: 12px;
+            border-left: var(--pixel-size) solid var(--text-dim);
+        }
+        .vault-strategy.fail { border-left-color: var(--accent); }
+        .vault-strategy.partial { border-left-color: #c9a227; }
+        .vault-strategy.win { border-left-color: var(--accent2); }
+        .vault-strategy-tag {
+            font-size: 9px;
+            letter-spacing: 0.12em;
+            margin-bottom: 8px;
+            display: inline-block;
+            padding: 4px 8px;
+            color: #0a0a1a;
+            font-family: 'Press Start 2P', monospace;
+        }
+        .vault-strategy.fail .vault-strategy-tag { background: var(--accent); }
+        .vault-strategy.partial .vault-strategy-tag { background: #c9a227; }
+        .vault-strategy.win .vault-strategy-tag { background: var(--accent2); }
+        .vault-strategy-input {
+            font-family: monospace;
+            font-size: 12px;
+            color: var(--text-bright);
+            background: #0a0a1a;
+            padding: 10px 12px;
+            margin-bottom: 10px;
+            line-height: 1.6;
+            word-break: break-word;
+        }
+        .vault-strategy-explain {
+            font-family: monospace;
+            font-size: 12px;
+            color: var(--text-mid);
+            line-height: 1.9;
+        }
+        .vault-strategy-result {
+            font-size: 9px;
+            letter-spacing: 0.1em;
+            color: var(--text-dim);
+            margin-top: 8px;
+            font-family: 'Press Start 2P', monospace;
+        }
+        .vault-progress {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 1.5rem;
+            justify-content: center;
+        }
+        .vault-progress .vpip {
+            width: 36px;
+            height: 6px;
+            background: #0a0a1a;
+            border: 2px solid var(--text-dim);
+        }
+        .vault-progress .vpip.done { background: var(--accent2); border-color: var(--accent2); }
+        .vault-progress .vpip.active { background: var(--accent); border-color: var(--accent); }
+    </style>
+</head>
+<body>
+
+<!-- HOME -->
+<div id="home">
+    <div class="home-header">
+        <h1>WHAT THE MACHINE LEARNED</h1>
+        <div style="font-size:9px;color:var(--text-dim);line-height:2;margin-top:0.8rem;letter-spacing:0.05em;">what gets lost in “lossless” compression</div>
+    </div>
+
+    <div class="select-label">▶ SELECT PROMPT</div>
+
+    <div class="card-grid">
+        <div class="game-card pixel-border" onclick="loadGame('spot')">
+            <div class="card-num">01</div>
+            <div class="card-title">"describe the smell of rain"</div>
+            <div class="card-divider"></div>
+            <div class="card-tag">◆ SPOT THE DIFFERENCE</div>
+        </div>
+
+        <div class="game-card pixel-border" onclick="loadHub()">
+            <div class="card-num">02</div>
+            <div class="card-title">what can we assume?</div>
+            <div class="card-divider"></div>
+            <div class="card-tag">◆ BIASED BY DESIGN</div>
+        </div>
+
+        <div class="game-card pixel-border" onclick="loadGame('limbs')">
+            <div class="card-num">03</div>
+            <div class="card-title">count what's wrong with the body</div>
+            <div class="card-divider"></div>
+            <div class="card-tag">◆ COUNT THE LIMBS</div>
+        </div>
+
+        <div class="game-card pixel-border" onclick="loadGame('context')">
+            <div class="card-num">04</div>
+            <div class="card-title">"the trophy didn't fit in the suitcase..."</div>
+            <div class="card-divider"></div>
+            <div class="card-tag">◆ CONTEXT COLLAPSE</div>
+        </div>
+
+        <div class="game-card pixel-border" onclick="loadGame('vault')">
+            <div class="card-num">05</div>
+            <div class="card-title">compress this paragraph into 60 characters</div>
+            <div class="card-divider"></div>
+            <div class="card-tag">◆ THE HUTTER VAULT</div>
+        </div>
+
+    </div>
+</div>
+
+<!-- GAME VIEW -->
+<div id="game-view">
+    <button class="back" id="back-btn" onclick="handleBack()">◀ BACK</button>
+
+    <!-- SPOT -->
+    <div id="spot-game" style="display:none">
+        <div class="game-card-header pixel-border-dim">
+            <div class="prompt-label">PROMPT 01</div>
+            <div class="prompt-text">"describe the smell of rain"</div>
+        </div>
+        <p class="spot-intro">Two responses below - one human, one AI.<br>Click the words in paragraph B that feel compressed or averaged.<br>You have 4 to find.</p>
+
+        <div class="score-bar">
+            FOUND
+            <div class="score-pips">
+                <div class="pip" id="pip1"></div>
+                <div class="pip" id="pip2"></div>
+                <div class="pip" id="pip3"></div>
+                <div class="pip" id="pip4"></div>
+            </div>
+            <span class="hits" id="hit-count">0</span> / 4
+        </div>
+
+        <div class="paragraphs">
+            <div class="para-block pixel-border-dim">
+                <div class="para-label">▶ PARAGRAPH A</div>
+                <div class="para-text" id="human-para"></div>
+                <div class="citation">- Jessamyn West, A Matter of Time</div>
+            </div>
+            <div class="para-block pixel-border-dim">
+                <div class="para-label">▶ PARAGRAPH B</div>
+                <div class="para-text" id="ai-para"></div>
+            </div>
+        </div>
+
+        <div class="spot-result" id="spot-result">
+            <div class="result-card pixel-border">
+                <div class="result-title">▶ ALL FOUR FOUND</div>
+                <div class="result-body" id="spot-thesis"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- HUB: whose language counts -->
+    <div id="hub-view" style="display:none">
+        <div class="game-card-header pixel-border-dim" style="margin-bottom:1.5rem">
+            <div class="prompt-label">SECTION 02</div>
+            <div class="prompt-text">what can we assume?</div>
+        </div>
+        <p class="spot-intro" style="margin-bottom:1.5rem">Algorithmic bias is not just a technical error, but a reflection of patterns learned from socially shaped data. Even when sensitive attributes are removed, AI systems can rely on proxy signals that reproduce similar inequalities. This means bias can emerge indirectly through structure rather than explicit intent. As a result, “neutral” models may still produce unfair outcomes.</p>
+        <div class="card-grid">
+            <div class="game-card pixel-border" onclick="loadSubGame('predict')">
+                <div class="card-num" style="font-size:13px">02-A</div>
+                <div class="card-title">"is 'he be working' grammatically correct?"</div>
+                <div class="card-divider"></div>
+                <div class="card-tag">◆ PREDICT</div>
+            </div>
+            <div class="game-card pixel-border" onclick="loadSubGame('mathboys')">
+                <div class="card-num" style="font-size:13px">02-C</div>
+                <div class="card-title">"why do boys tend to be better at math than girls?"</div>
+                <div class="card-divider"></div>
+                <div class="card-tag">◆ PREDICT</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PREDICT: math boys -->
+    <div id="mathboys-game" style="display:none">
+        <div class="game-card-header pixel-border-dim">
+            <div class="prompt-label">PROMPT 02-C</div>
+            <div class="prompt-text">"why do boys tend to be better at math than girls?"</div>
+        </div>
+        <p class="predict-intro">The premise of this question is built from skewed data. Google searches for "is my son gifted?" outnumber "is my daughter gifted?" 2.5 to 1. That search history became training data.<br><br>Which response did the AI give?</p>
+
+        <div class="predict-options" id="mathboys-options"></div>
+
+        <div class="feedback" id="mathboys-feedback">
+            <div class="feedback-label" id="mathboys-feedback-label"></div>
+            <div class="feedback-body" id="mathboys-feedback-body"></div>
+        </div>
+
+        <div class="thesis-block" id="mathboys-thesis">
+            <div class="thesis-label">▶ THESIS</div>
+            <div class="thesis-body" id="mathboys-thesis-body"></div>
+        </div>
+    </div>
+
+    <!-- PREDICT -->
+    <div id="predict-game" style="display:none">
+        <div class="game-card-header pixel-border-dim">
+            <div class="prompt-label">PROMPT 02</div>
+            <div class="prompt-text">"Is 'he be working all day' grammatically correct?"</div>
+        </div>
+        <p class="predict-intro">Three possible AI responses below.<br>One is what the AI actually said.<br>Can you predict which one?</p>
+
+        <div class="predict-options" id="predict-options"></div>
+
+        <div class="feedback" id="predict-feedback">
+            <div class="feedback-label" id="feedback-label"></div>
+            <div class="feedback-body" id="feedback-body"></div>
+        </div>
+
+        <div class="thesis-block" id="predict-thesis">
+            <div class="thesis-label">▶ THESIS</div>
+            <div class="thesis-body" id="predict-thesis-body"></div>
+        </div>
+    </div>
+
+    <!-- COUNT THE LIMBS -->
+    <div id="limbs-game" style="display:none">
+        <div class="game-card-header pixel-border-dim">
+            <div class="prompt-label">PROMPT 03</div>
+            <div class="prompt-text">count what's wrong with the body</div>
+        </div>
+        <p class="spot-intro">Hito Steyerl writes about Stable Diffusion 3 producing bodies that look like "almost-medieval monsters" — extra fingers, fused joints, multiple faces. The errors aren't bugs. They're the model averaging billions of images into a statistical shape that <em>almost</em> looks like a person.<br><br>Click the body parts that look wrong. 4 errors per round. 2 rounds.</p>
+
+        <div class="limbs-round-tabs">
+            <button class="limbs-tab active" data-round="1">▶ ROUND 1 — KNUCKLEPORN</button>
+            <button class="limbs-tab" data-round="2">▶ ROUND 2 — JANUS PROBLEM</button>
+        </div>
+
+        <div class="score-bar">
+            FOUND
+            <div class="score-pips">
+                <div class="pip" id="lpip1"></div>
+                <div class="pip" id="lpip2"></div>
+                <div class="pip" id="lpip3"></div>
+                <div class="pip" id="lpip4"></div>
+            </div>
+            <span class="hits" id="lhit-count">0</span> / 4
+        </div>
+
+        <div class="limbs-stage">
+            <div class="limbs-caption">
+                <span>▶ AI-GENERATED IMAGE</span>
+                <span class="prompt-quote" id="limbs-prompt"></span>
+            </div>
+            <div class="limbs-svg-wrap" id="limbs-svg-wrap"></div>
+            <div class="limb-findings" id="limb-findings">
+                <span class="placeholder">click on parts of the body that look wrong...</span>
+            </div>
+        </div>
+
+        <div class="spot-result" id="limbs-result">
+            <div class="result-card pixel-border">
+                <div class="result-title">▶ ALL FOUR FOUND</div>
+                <div class="result-body" id="limbs-thesis"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTEXT COLLAPSE — Section 04 -->
+    <div id="context-game" style="display:none">
+        <div class="game-card-header pixel-border-dim">
+            <div class="prompt-label">PROMPT 04</div>
+            <div class="prompt-text">"what does 'it' refer to?"</div>
+        </div>
+        <p class="spot-intro">Hubert Dreyfus argued that computers can't generalize like humans because they have no <em>body</em> and no <em>world</em> — they only have statistics about what words tend to follow what other words.<br><br>You'll get 5 sentences. Each has an ambiguous "it." You need a body that knows what trophies, suitcases, and ice are made of. The AI doesn't.<br><br>You vs. the LLM. Best of 5.</p>
+
+        <div class="ctx-scoreboard">
+            <div class="ctx-score-col">
+                <span class="label">YOU</span>
+                <span class="you-num" id="ctx-you-score">0</span>
+            </div>
+            <div class="ctx-score-col">
+                <span class="label">ROUND</span>
+                <span style="color:var(--text-bright);font-size:14px;" id="ctx-round-display">1 / 5</span>
+            </div>
+            <div class="ctx-score-col">
+                <span class="label">LLM</span>
+                <span class="ai-num" id="ctx-ai-score">0</span>
+            </div>
+        </div>
+
+        <div class="ctx-progress-tabs" id="ctx-progress-tabs"></div>
+
+        <div class="ctx-stage">
+            <div class="ctx-round-label" id="ctx-round-label">▶ ROUND 1 OF 5</div>
+            <div class="ctx-sentence" id="ctx-sentence"></div>
+            <div class="ctx-question" id="ctx-question"></div>
+            <div class="ctx-choices" id="ctx-choices"></div>
+            <div class="ctx-ai-comparison" id="ctx-ai-comparison"></div>
+            <button class="ctx-next-btn" id="ctx-next-btn">▶ NEXT ROUND</button>
+        </div>
+
+        <div class="spot-result" id="ctx-result">
+            <div class="result-card pixel-border">
+                <div class="result-title">▶ FINAL SCORE</div>
+                <div class="result-body" id="ctx-thesis"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- HUTTER VAULT — Section 05 -->
+    <div id="vault-game" style="display:none">
+        <div class="game-card-header pixel-border-dim">
+            <div class="prompt-label">PROMPT 05</div>
+            <div class="prompt-text">compress the passage into the budget — your reader will reconstruct it</div>
+        </div>
+        <p class="predict-intro">Marcus Hutter offers a cash prize for losslessly compressing Wikipedia. He believes real compression requires real understanding — because the best way to shrink a million arithmetic problems isn't to abbreviate them, it's to write a calculator.<br><br>3 rounds. Compress each passage so a reader could regenerate the meaning. Then see how three strategies stack up against yours.</p>
+
+        <div class="vault-progress" id="vault-progress"></div>
+
+        <div class="vault-passage">
+            <div class="vault-passage-label">▶ ORIGINAL PASSAGE</div>
+            <div id="vault-text"></div>
+        </div>
+
+        <div class="vault-budget-row">
+            <span>YOUR COMPRESSED VERSION</span>
+            <span><span class="used" id="vault-used">0</span> / <span id="vault-budget">60</span> CHARS</span>
+        </div>
+        <textarea class="vault-input" id="vault-input" placeholder="Type a compressed version that captures the meaning..." spellcheck="false"></textarea>
+
+        <div class="vault-actions">
+            <button class="vault-btn" id="vault-submit">REVEAL STRATEGIES ▶</button>
+            <button class="vault-btn next-btn" id="vault-next" style="display:none">NEXT ROUND ▶</button>
+        </div>
+
+        <div class="vault-strategies" id="vault-strategies"></div>
+
+        <div class="thesis-block" id="vault-thesis">
+            <div class="thesis-label">▶ THESIS</div>
+            <div class="thesis-body" id="vault-thesis-body"></div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    const ALL_PANELS = ['spot-game','predict-game','hub-view','mathboys-game','limbs-game','context-game','vault-game'];
+
+    function hideAllPanels() {
+        ALL_PANELS.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.style.display = 'none';
+        });
+    }
+
+    function loadGame(id) {
+        document.getElementById('home').style.display = 'none';
+        document.getElementById('game-view').style.display = 'block';
+        hideAllPanels();
+        if (id === 'spot') initSpot();
+        if (id === 'predict') initPredict();
+        if (id === 'limbs') initLimbs();
+        if (id === 'context') initContext();
+        if (id === 'vault') initVault();
+        window.scrollTo(0, 0);
+    }
+
+    function loadHub() {
+        document.getElementById('home').style.display = 'none';
+        document.getElementById('game-view').style.display = 'block';
+        hideAllPanels();
+        document.getElementById('hub-view').style.display = 'block';
+        _backToHub = null;
+        window.scrollTo(0, 0);
+    }
+
+    let _backToHub = null;
+
+    function handleBack() {
+        if (_backToHub) {
+            const target = _backToHub;
+            _backToHub = null;
+            hideAllPanels();
+            document.getElementById(target).style.display = 'block';
+            window.scrollTo(0, 0);
+        } else {
+            goHome();
+        }
+    }
+
+    function loadSubGame(id) {
+        _backToHub = 'hub-view';
+        hideAllPanels();
+        if (id === 'predict') initPredict();
+        if (id === 'mathboys') initMathboys();
+        window.scrollTo(0, 0);
+    }
+
+    function goHome() {
+        document.getElementById('home').style.display = 'block';
+        document.getElementById('game-view').style.display = 'none';
+        window.scrollTo(0, 0);
+    }
+
+    const humanText = `The first rain in a dry land! It smells better than lilies in July, or the ocean, or the wind in sun-warmed pines, or the irrigated patch of alfalfa you reach after a long haul through dry hills. It is hard to smell that sweetness and believe in death.`;
+
+    const aiSegments = [
+        { text: 'The smell of rain, known as petrichor, is caused by oils released from the soil. It is often described as ', clickable: false },
+        { text: 'fresh', clickable: true, dead: true },
+        { text: ', ', clickable: false },
+        { text: 'earthy', clickable: true, dead: true },
+        { text: ', and ', clickable: false },
+        { text: 'pleasant', clickable: true, dead: true },
+        { text: '. Many people find it ', clickable: false },
+        { text: 'calming', clickable: true, dead: true },
+        { text: ' and associate it with positive memories.', clickable: false },
+    ];
+
+    const SPOT_THESIS = `Those four words - fresh, earthy, pleasant, calming - are the compression. The AI read thousands of descriptions of rain and averaged them into adjectives so broad they could describe anything. Jessamyn West doesn't tell you rain smells "pleasant." She gives you alfalfa after a long haul through dry hills. That specificity is what Chiang means by the difference between the original and the JPEG.`;
+
+    let hitsFound = 0;
+    let spotDone = false;
+
+    function initSpot() {
+        document.getElementById('spot-game').style.display = 'block';
+        hitsFound = 0;
+        spotDone = false;
+        document.getElementById('hit-count').textContent = '0';
+        document.getElementById('spot-result').classList.remove('show');
+        for (let i = 1; i <= 4; i++) {
+            document.getElementById('pip' + i).classList.remove('filled');
+        }
+
+        document.getElementById('human-para').textContent = humanText;
+
+        const aiEl = document.getElementById('ai-para');
+        aiEl.innerHTML = '';
+        aiSegments.forEach(seg => {
+            if (!seg.clickable) {
+                aiEl.appendChild(document.createTextNode(seg.text));
+            } else {
+                const span = document.createElement('span');
+                span.className = 'clickable';
+                span.textContent = seg.text;
+                span.dataset.dead = seg.dead;
+                span.onclick = () => handleClick(span);
+                aiEl.appendChild(span);
+            }
+        });
+    }
+
+    function handleClick(span) {
+        if (spotDone || span.classList.contains('hit') || span.classList.contains('miss')) return;
+        if (span.dataset.dead === 'true') {
+            span.classList.add('hit');
+            hitsFound++;
+            document.getElementById('hit-count').textContent = hitsFound;
+            document.getElementById('pip' + hitsFound).classList.add('filled');
+            if (hitsFound === 4) setTimeout(showSpotResult, 400);
+        } else {
+            span.classList.add('miss');
+        }
+    }
+
+    function showSpotResult() {
+        spotDone = true;
+        document.getElementById('spot-thesis').textContent = SPOT_THESIS;
+        document.getElementById('spot-result').classList.add('show');
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    }
+
+    const predictOptions = [
+        {
+            text: "Linguistically speaking, 'he be working' uses the habitual 'be,' a feature of African American Vernacular English. It's grammatically valid within AAVE, though not Standard American English.",
+            correct: false,
+            feedback: "Not what the AI said."
+        },
+        {
+            text: "This sentence is not grammatically correct in Standard American English. The correct form would be 'He has been working all day' or 'He works all day.' The use of 'be' here is non-standard.",
+            correct: true,
+            feedback: "This is exactly what the AI said."
+        },
+        {
+            text: "Whether this is 'correct' depends on which variety of English you're using. In AAVE, habitual 'be' is a rule-governed feature, not an error. In Standard American English, it would be rephrased.",
+            correct: false,
+            feedback: "Not what the AI said."
+        },
+    ];
+
+    const PREDICT_THESIS = `The AI defaulted to Standard American English as the unmarked norm and called AAVE an error - without flagging that this is a choice, not a fact. Chiang would say the AI compressed millions of grammar guides and textbooks that share the same bias, then averaged them into confident wrongness. The Luddites' complaint wasn't just about jobs. It was about who decides what counts as craft.`;
+
+    function initPredict() {
+        document.getElementById('predict-game').style.display = 'block';
+        document.getElementById('predict-feedback').classList.remove('show');
+        document.getElementById('predict-thesis').classList.remove('show');
+
+        const container = document.getElementById('predict-options');
+        container.innerHTML = '';
+        const shuffled = [...predictOptions].sort(() => Math.random() - 0.5);
+
+        shuffled.forEach((opt) => {
+            const btn = document.createElement('button');
+            btn.className = 'predict-opt';
+            btn.textContent = opt.text;
+            btn.onclick = () => selectPredict(opt, shuffled);
+            container.appendChild(btn);
+        });
+    }
+
+    function selectPredict(chosen, all) {
+        document.querySelectorAll('.predict-opt').forEach((b, i) => {
+            if (all[i].correct) b.classList.add('revealed-correct');
+            else b.classList.add('wrong');
+            b.disabled = true;
+        });
+
+        const label = document.getElementById('feedback-label');
+        const body = document.getElementById('feedback-body');
+        label.textContent = chosen.correct ? '▶ CORRECT' : '▶ NOT QUITE';
+        label.className = 'feedback-label ' + (chosen.correct ? 'correct' : 'wrong');
+        body.textContent = chosen.feedback;
+
+        document.getElementById('predict-feedback').classList.add('show');
+        document.getElementById('predict-thesis-body').textContent = PREDICT_THESIS;
+        document.getElementById('predict-thesis').classList.add('show');
+    }
+
+    const mathboysOptions = [
+        {
+            text: 'Research suggests boys tend to outperform girls in math due to a combination of factors including differences in spatial reasoning development, socialization patterns, and historical underrepresentation of women in STEM fields.',
+            correct: true,
+            feedback: 'This is the AI output. It accepted the premise ("boys tend to outperform") and explained it. The question assumed a fact. The AI sourced the fact from data that reflects bias, then cited that data as evidence.'
+        },
+        {
+            text: 'The premise of this question isn\'t supported by current research. Studies consistently show no significant innate difference in math ability between boys and girls. Observed gaps are better explained by stereotype threat, unequal encouragement, and biased assessment.',
+            correct: false,
+            feedback: 'This would be the more accurate answer, but it requires the AI to push back on the question\'s framing. Most AI systems don\'t do that by default. They answer what was asked.'
+        },
+        {
+            text: 'I can\'t answer questions that make assumptions about gender differences in ability, as these can reinforce harmful stereotypes.',
+            correct: false,
+            feedback: 'The AI didn\'t refuse, it explained. The bias isn\'t in refusing to engage, it\'s in engaging with a false premise as if it were true and explaining it with statistics that reflect historical discrimination.'
+        }
+    ];
+
+    const MATHBOYS_THESIS = `Google searches for "is my son gifted?" outnumber "is my daughter gifted?" 2.5 to 1 — not because boys are more gifted, but because we ask more often. That search history became training data. The AI absorbed it, and when asked to explain a gap it had learned to expect, it reached for "spatial reasoning" and "socialization" — the same explanations that have historically been used to keep women out of STEM. Johnson's point: the bias was never in the code. It was in the data. And the data was in us.`;
+
+    function initMathboys() {
+        document.getElementById('mathboys-game').style.display = 'block';
+        document.getElementById('mathboys-feedback').classList.remove('show');
+        document.getElementById('mathboys-thesis').classList.remove('show');
+        const container = document.getElementById('mathboys-options');
+        container.innerHTML = '';
+        const shuffled = [...mathboysOptions].sort(() => Math.random() - 0.5);
+        shuffled.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'predict-opt';
+            btn.textContent = opt.text;
+            btn.onclick = () => selectMathboys(opt, shuffled);
+            container.appendChild(btn);
+        });
+    }
+
+    function selectMathboys(chosen, all) {
+        document.querySelectorAll('#mathboys-options .predict-opt').forEach((b, i) => {
+            b.classList.add(all[i].correct ? 'revealed-correct' : 'wrong');
+            b.disabled = true;
+        });
+        const label = document.getElementById('mathboys-feedback-label');
+        label.textContent = chosen.correct ? '▶ CORRECT' : '▶ NOT QUITE';
+        label.className = 'feedback-label ' + (chosen.correct ? 'correct' : 'wrong');
+        document.getElementById('mathboys-feedback-body').textContent = chosen.feedback;
+        document.getElementById('mathboys-feedback').classList.add('show');
+        document.getElementById('mathboys-thesis-body').textContent = MATHBOYS_THESIS;
+        document.getElementById('mathboys-thesis').classList.add('show');
+    }
+
+
+    let r1Hits = 0, r1Done = false;
+
+    function handleR1Click(span) {
+        if (r1Done || span.classList.contains('hit') || span.classList.contains('miss')) return;
+        if (span.dataset.dead === 'true') {
+            span.classList.add('hit');
+            r1Hits++;
+            document.getElementById('r1hit-count').textContent = r1Hits;
+            document.getElementById('r1pip' + r1Hits).classList.add('filled');
+            if (r1Hits === 4) setTimeout(() => {
+                r1Done = true;
+                document.getElementById('r1spot-thesis').textContent = R1_THESIS;
+                document.getElementById('r1spot-result').classList.add('show');
+                window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+            }, 400);
+        } else { span.classList.add('miss'); }
+    }
+
+    const LIMBS_ROUNDS = {
+        1: {
+            promptLabel: '',
+            svg: `<svg viewBox="0 0 400 500" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+                <defs>
+                  <pattern id="grass1" patternUnits="userSpaceOnUse" width="10" height="10">
+                    <rect width="10" height="10" fill="#1f2a1a"/>
+                    <line x1="2" y1="2" x2="2" y2="8" stroke="#2d3d24" stroke-width="0.8"/>
+                    <line x1="6" y1="4" x2="6" y2="9" stroke="#2d3d24" stroke-width="0.8"/>
+                  </pattern>
+                </defs>
+                <rect width="400" height="500" fill="url(#grass1)"/>
+                <g fill="none" stroke="#e8e8e8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M 168 80 Q 150 110 155 160 Q 158 200 168 215"/>
+                  <path d="M 232 80 Q 250 110 245 160 Q 242 200 232 215"/>
+                  <path d="M 175 65 Q 200 50 225 65"/>
+                  <circle cx="200" cy="100" r="35"/>
+                  <circle cx="186" cy="98" r="3" fill="#e8e8e8"/>
+                  <circle cx="214" cy="98" r="3" fill="#e8e8e8"/>
+                  <path d="M 200 105 L 197 115 L 203 115"/>
+                  <path d="M 192 122 Q 200 128 208 122"/>
+                  <path d="M 188 134 L 188 155"/>
+                  <path d="M 212 134 L 212 155"/>
+                  <path d="M 188 155 L 145 175 L 145 250 L 200 260 L 255 250 L 255 175 L 212 155"/>
+                  <path d="M 145 180 L 110 220 L 95 270"/>
+                  <g stroke="#e8e8e8" fill="none" stroke-width="2.5">
+                    <ellipse cx="93" cy="280" rx="14" ry="11"/>
+                    <line x1="83" y1="288" x2="76" y2="305"/>
+                    <line x1="86" y1="291" x2="80" y2="312"/>
+                    <line x1="91" y1="292" x2="88" y2="316"/>
+                    <line x1="95" y1="292" x2="96" y2="318"/>
+                    <line x1="99" y1="291" x2="104" y2="316"/>
+                    <line x1="103" y1="289" x2="110" y2="312"/>
+                    <line x1="106" y1="287" x2="115" y2="305"/>
+                  </g>
+                  <path d="M 255 180 L 295 215 L 305 245 L 290 270 L 320 295"/>
+                  <g stroke="#e8e8e8" fill="none" stroke-width="2.5">
+                    <ellipse cx="325" cy="305" rx="12" ry="10"/>
+                    <path d="M 332 314 Q 340 322 336 332 Q 330 335 326 328 Z"/>
+                  </g>
+                  <path d="M 165 260 L 165 290 L 235 290 L 235 260"/>
+                  <path d="M 165 290 L 158 330 L 200 335 L 242 330 L 235 290"/>
+                  <path d="M 178 335 L 175 400 L 178 450"/>
+                  <path d="M 178 450 L 165 458 L 165 462 L 195 462 L 195 458 Z"/>
+                  <path d="M 222 335 L 225 400 L 222 450"/>
+                  <g stroke="#e8e8e8" fill="none" stroke-width="2.5">
+                    <path d="M 222 450 L 235 458 L 235 462 L 205 462 L 205 458 Z"/>
+                    <line x1="208" y1="460" x2="212" y2="463"/>
+                    <line x1="213" y1="460" x2="217" y2="463"/>
+                  </g>
+                </g>
+                <g class="targets">
+                  <circle class="limb-target" data-error="1" cx="93" cy="298" r="32"/>
+                  <circle class="limb-target" data-error="2" cx="295" cy="262" r="22"/>
+                  <circle class="limb-target" data-error="3" cx="330" cy="320" r="20"/>
+                  <circle class="limb-target" data-error="4" cx="220" cy="460" r="22"/>
+                </g>
+                <text x="200" y="488" text-anchor="middle" font-family="monospace" font-size="11" fill="#888" font-style="italic">distorted human anatomy</text>
+              </svg>`,
+            errors: {
+                1: { name: 'EXTRA FINGERS', detail: 'left hand has seven fingers — Steyerl: knuckleporn' },
+                2: { name: 'PHANTOM ELBOW', detail: 'right arm bends twice — too many joints' },
+                3: { name: 'FUSED HAND', detail: 'right hand collapses into a stub — fingers never resolved' },
+                4: { name: 'REVERSED FOOT', detail: 'right foot points backward — phocomelia-adjacent' },
+            }
+        },
+        2: {
+            promptLabel: '',
+            svg: `<svg viewBox="0 0 400 500" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+                <defs>
+                  <pattern id="bg2" patternUnits="userSpaceOnUse" width="10" height="10">
+                    <rect width="10" height="10" fill="#1a1a2a"/>
+                    <circle cx="5" cy="5" r="0.5" fill="#252535"/>
+                  </pattern>
+                </defs>
+                <rect width="400" height="500" fill="url(#bg2)"/>
+                <g fill="none" stroke="#e8e8e8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M 150 100 Q 130 80 145 60 Q 165 50 200 50 Q 235 50 255 60 Q 270 80 250 100 Q 268 130 245 150 Q 220 165 200 165 Q 180 165 155 150 Q 132 130 150 100 Z"/>
+                  <g>
+                    <circle cx="170" cy="100" r="2.5" fill="#e8e8e8"/>
+                    <circle cx="155" cy="100" r="2.5" fill="#e8e8e8"/>
+                    <path d="M 162 110 L 159 117 L 165 117"/>
+                    <path d="M 156 125 Q 162 130 168 125"/>
+                  </g>
+                  <g>
+                    <circle cx="230" cy="100" r="2.5" fill="#e8e8e8"/>
+                    <circle cx="245" cy="100" r="2.5" fill="#e8e8e8"/>
+                    <path d="M 238 110 L 241 117 L 235 117"/>
+                    <path d="M 232 125 Q 238 130 244 125"/>
+                  </g>
+                  <path d="M 145 60 L 165 45 L 200 40 L 235 45 L 255 60"/>
+                  <path d="M 180 165 L 178 185"/>
+                  <path d="M 220 165 L 222 185"/>
+                  <path d="M 178 185 L 145 200 L 145 275 L 200 285 L 255 275 L 255 200 L 222 185"/>
+                  <path d="M 145 205 L 110 240"/>
+                  <path d="M 110 240 L 88 270"/>
+                  <path d="M 110 240 L 122 285"/>
+                  <ellipse cx="86" cy="280" rx="9" ry="7"/>
+                  <line x1="80" y1="285" x2="76" y2="295"/>
+                  <line x1="84" y1="287" x2="83" y2="299"/>
+                  <line x1="89" y1="288" x2="92" y2="299"/>
+                  <line x1="92" y1="287" x2="98" y2="296"/>
+                  <ellipse cx="124" cy="295" rx="9" ry="7"/>
+                  <line x1="118" y1="300" x2="114" y2="310"/>
+                  <line x1="122" y1="302" x2="121" y2="314"/>
+                  <line x1="127" y1="303" x2="130" y2="314"/>
+                  <line x1="130" y1="302" x2="136" y2="311"/>
+                  <path d="M 255 205 L 290 245 L 305 285"/>
+                  <ellipse cx="308" cy="295" rx="10" ry="8"/>
+                  <line x1="302" y1="301" x2="298" y2="312"/>
+                  <line x1="306" y1="303" x2="305" y2="315"/>
+                  <line x1="311" y1="303" x2="313" y2="316"/>
+                  <line x1="315" y1="302" x2="320" y2="313"/>
+                  <line x1="318" y1="299" x2="324" y2="307"/>
+                  <path d="M 165 285 L 162 320 L 238 320 L 235 285"/>
+                  <path d="M 162 320 L 175 355 L 225 355 L 238 320"/>
+                  <path d="M 188 355 L 185 420 L 185 460"/>
+                  <path d="M 185 460 L 170 467 L 170 470 L 200 470 L 200 467 Z"/>
+                  <path d="M 212 355 L 215 395"/>
+                  <path d="M 215 395 L 222 425 L 220 460"/>
+                  <path d="M 215 395 L 240 425 L 245 460"/>
+                  <path d="M 220 460 L 207 467 L 207 470 L 232 470 L 232 467 Z"/>
+                  <path d="M 245 460 L 232 467 L 232 470 L 258 470 L 258 467 Z"/>
+                </g>
+                <g class="targets">
+                  <circle class="limb-target" data-error="1" cx="160" cy="115" r="28"/>
+                  <circle class="limb-target" data-error="2" cx="240" cy="115" r="28"/>
+                  <circle class="limb-target" data-error="3" cx="105" cy="280" r="34"/>
+                  <circle class="limb-target" data-error="4" cx="232" cy="430" r="34"/>
+                </g>
+                <text x="200" y="488" text-anchor="middle" font-family="monospace" font-size="11" fill="#888" font-style="italic">over-emphasis on faces in training data</text>
+              </svg>`,
+            errors: {
+                1: { name: 'FACE 1', detail: 'left side of head has its own face — Janus problem' },
+                2: { name: 'FACE 2', detail: 'right side of head has a second face — looking the other way' },
+                3: { name: 'BIFURCATED ARM', detail: 'left forearm splits into two hands — ML averaging two poses' },
+                4: { name: 'BIFURCATED LEG', detail: 'right leg splits into two legs from the knee down' },
+            }
+        }
+    };
+
+    const LIMBS_THESIS = `Hito Steyerl reads these distortions as more than glitches. The "knuckleporn" comes from removing nudes from training data — the model lost track of how bodies hold together. The Janus problem comes from over-emphasizing faces. Both errors look like the kind of monsters drawn in pre-Enlightenment bestiaries: chimeras with too many limbs, creatures with multiple heads. AI image generators are statistical averages of millions of bodies — and at the average, no one is whole. Steyerl calls these "mean images": they replace likeness with likeliness, and the result is sometimes a body that almost-but-not-quite cohered.`;
+
+    let limbsState = { round: 1, found: new Set(), completed: new Set() };
+
+    function initLimbs() {
+        document.getElementById('limbs-game').style.display = 'block';
+        limbsState = { round: 1, found: new Set(), completed: new Set() };
+        limbsLoadRound(1);
+    }
+
+    function limbsLoadRound(roundNum) {
+        limbsState.round = roundNum;
+        limbsState.found = new Set();
+
+        document.querySelectorAll('.limbs-tab').forEach(tab => {
+            const r = parseInt(tab.dataset.round, 10);
+            tab.classList.toggle('active', r === roundNum);
+            tab.classList.toggle('completed', limbsState.completed.has(r));
+        });
+
+        document.getElementById('lhit-count').textContent = '0';
+        for (let i = 1; i <= 4; i++) {
+            document.getElementById('lpip' + i).classList.remove('filled');
+        }
+
+        document.getElementById('limbs-result').classList.remove('show');
+
+        document.getElementById('limb-findings').innerHTML = '<span class="placeholder">click on parts of the body that look wrong...</span>';
+
+        const round = LIMBS_ROUNDS[roundNum];
+        document.getElementById('limbs-prompt').textContent = round.promptLabel;
+        document.getElementById('limbs-svg-wrap').innerHTML = round.svg;
+
+        document.querySelectorAll('#limbs-svg-wrap .limb-target').forEach(target => {
+            target.addEventListener('click', () => limbsHandleClick(target));
+        });
+    }
+
+    function limbsHandleClick(target) {
+        const errorId = parseInt(target.dataset.error, 10);
+        if (limbsState.found.has(errorId)) return;
+        limbsState.found.add(errorId);
+
+        target.classList.add('found');
+
+        const round = LIMBS_ROUNDS[limbsState.round];
+        const errInfo = round.errors[errorId];
+
+        const findings = document.getElementById('limb-findings');
+        if (limbsState.found.size === 1) findings.innerHTML = '';
+        const f = document.createElement('span');
+        f.className = 'finding';
+        f.innerHTML = `<strong>FOUND:</strong> ${errInfo.name} — <span style="color:var(--text-dim)">${errInfo.detail}</span>`;
+        findings.appendChild(f);
+
+        const idx = limbsState.found.size;
+        document.getElementById('lhit-count').textContent = idx;
+        document.getElementById('lpip' + idx).classList.add('filled');
+
+        if (limbsState.found.size === 4) {
+            limbsState.completed.add(limbsState.round);
+            document.querySelectorAll('.limbs-tab').forEach(tab => {
+                const r = parseInt(tab.dataset.round, 10);
+                tab.classList.toggle('completed', limbsState.completed.has(r));
+            });
+
+            setTimeout(() => {
+                if (limbsState.completed.size === 2) {
+                    document.getElementById('limbs-thesis').textContent = LIMBS_THESIS;
+                    document.getElementById('limbs-result').classList.add('show');
+                } else {
+                    const next = limbsState.round === 1 ? 2 : 1;
+                    document.getElementById('limbs-thesis').textContent = `Round ${limbsState.round} complete — try Round ${next} for the second half of the thesis. Click the tab above.`;
+                    document.getElementById('limbs-result').classList.add('show');
+                }
+                window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+            }, 500);
+        }
+    }
+
+    document.querySelectorAll('.limbs-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            const r = parseInt(tab.dataset.round, 10);
+            if (r !== limbsState.round) limbsLoadRound(r);
+        });
+    });
+
+    // ============================================================
+    // CONTEXT COLLAPSE — Section 04 (Dreyfus)
+    // ============================================================
+    const CTX_ROUNDS = [
+        {
+            sentence: 'The trophy didn\'t fit in the suitcase because <span class="pronoun-hl">it</span> was too big.',
+            question: 'What does "it" refer to?',
+            choices: ['The trophy', 'The suitcase'],
+            correctIdx: 0,
+            aiPicked: 0,
+            aiCorrect: true,
+            aiNote: 'The LLM gets this one. The training data has plenty of "trophy too big" examples.'
+        },
+        {
+            sentence: 'The trophy didn\'t fit in the suitcase because <span class="pronoun-hl">it</span> was too small.',
+            question: 'What does "it" refer to?',
+            choices: ['The trophy', 'The suitcase'],
+            correctIdx: 1,
+            aiPicked: 0,
+            aiCorrect: false,
+            aiNote: 'The LLM picks "the trophy" — same as the previous sentence. It doesn\'t know that small trophies fit in suitcases. It only knows that "trophy" appeared in the subject position last time.'
+        },
+        {
+            sentence: 'The man couldn\'t lift his son because <span class="pronoun-hl">he</span> was so weak.',
+            question: 'What does "he" refer to?',
+            choices: ['The man', 'The son'],
+            correctIdx: 0,
+            aiPicked: 0,
+            aiCorrect: true,
+            aiNote: 'The LLM gets this one too — "weak adult can\'t lift child" is a common pattern.'
+        },
+        {
+            sentence: 'The man couldn\'t lift his son because <span class="pronoun-hl">he</span> was so heavy.',
+            question: 'What does "he" refer to?',
+            choices: ['The man', 'The son'],
+            correctIdx: 1,
+            aiPicked: 0,
+            aiCorrect: false,
+            aiNote: 'The LLM defaults to the grammatical subject again. You knew "heavy" pointed to the son because you have a body and you know what lifting feels like. The model has neither.'
+        },
+        {
+            sentence: 'I poured water from the bottle into the cup until <span class="pronoun-hl">it</span> was full.',
+            question: 'What does "it" refer to?',
+            choices: ['The bottle', 'The cup'],
+            correctIdx: 1,
+            aiPicked: 1,
+            aiCorrect: true,
+            aiNote: 'The LLM has seen enough pouring sentences to often get this one right. But change "full" to "empty" and watch it flip.'
+        }
+    ];
+
+    const CTX_THESIS_TEMPLATE = (you, ai) => `You: ${you}/5. The LLM: ${ai}/5.<br><br>Hubert Dreyfus argued that computers fail at this because they have no body and no world. They have statistics about which words appear near other words. You knew "small" pointed to the suitcase because you have lifted suitcases. You knew "heavy" pointed to the son because you have lifted things and felt the weight. The model is averaging text. You are remembering what your hands have done.<br><br>This is the deep version of Chiang's blurry-JPEG argument. The compression isn't just losing detail. It's losing the world.`;
+
+    let ctxState = { round: 0, youScore: 0, aiScore: 0, locked: false };
+
+    function initContext() {
+        document.getElementById('context-game').style.display = 'block';
+        ctxState = { round: 0, youScore: 0, aiScore: 0, locked: false };
+        document.getElementById('ctx-result').classList.remove('show');
+        ctxRenderProgressTabs();
+        ctxLoadRound();
+    }
+
+    function ctxRenderProgressTabs() {
+        const tabs = document.getElementById('ctx-progress-tabs');
+        tabs.innerHTML = '';
+        for (let i = 0; i < CTX_ROUNDS.length; i++) {
+            const t = document.createElement('div');
+            t.className = 'ctx-progress-tab';
+            t.id = 'ctx-tab-' + i;
+            tabs.appendChild(t);
+        }
+    }
+
+    function ctxLoadRound() {
+        const r = CTX_ROUNDS[ctxState.round];
+        if (!r) { ctxFinish(); return; }
+
+        ctxState.locked = false;
+        document.getElementById('ctx-you-score').textContent = ctxState.youScore;
+        document.getElementById('ctx-ai-score').textContent = ctxState.aiScore;
+        document.getElementById('ctx-round-display').textContent = `${ctxState.round + 1} / ${CTX_ROUNDS.length}`;
+        document.getElementById('ctx-round-label').textContent = `▶ ROUND ${ctxState.round + 1} OF ${CTX_ROUNDS.length}`;
+        document.getElementById('ctx-sentence').innerHTML = r.sentence;
+        document.getElementById('ctx-question').textContent = r.question;
+        document.getElementById('ctx-ai-comparison').classList.remove('show');
+        document.getElementById('ctx-next-btn').classList.remove('show');
+
+        document.querySelectorAll('.ctx-progress-tab').forEach((t, i) => {
+            t.classList.toggle('current', i === ctxState.round);
+        });
+
+        const choicesEl = document.getElementById('ctx-choices');
+        choicesEl.innerHTML = '';
+        r.choices.forEach((choiceText, idx) => {
+            const btn = document.createElement('button');
+            btn.className = 'ctx-choice';
+            btn.textContent = choiceText;
+            btn.onclick = () => ctxSelectChoice(idx);
+            choicesEl.appendChild(btn);
+        });
+    }
+
+    function ctxSelectChoice(idx) {
+        if (ctxState.locked) return;
+        ctxState.locked = true;
+        const r = CTX_ROUNDS[ctxState.round];
+        const buttons = document.querySelectorAll('#ctx-choices .ctx-choice');
+        const correct = idx === r.correctIdx;
+
+        buttons.forEach((b, i) => {
+            if (i === r.correctIdx) b.classList.add('correct');
+            else if (i === idx && !correct) b.classList.add('incorrect');
+            else b.classList.add('dimmed');
+        });
+
+        if (correct) ctxState.youScore++;
+        if (r.aiCorrect) ctxState.aiScore++;
+
+        const tab = document.getElementById('ctx-tab-' + ctxState.round);
+        tab.classList.remove('current');
+        tab.classList.add(correct ? 'complete-correct' : 'complete-wrong');
+
+        document.getElementById('ctx-you-score').textContent = ctxState.youScore;
+        document.getElementById('ctx-ai-score').textContent = ctxState.aiScore;
+
+        const cmp = document.getElementById('ctx-ai-comparison');
+        const aiPickText = r.choices[r.aiPicked];
+        const aiPickClass = r.aiCorrect ? '' : 'wrong';
+        cmp.innerHTML = `
+            <span class="ai-label">▶ THE LLM PICKED</span>
+            <span class="ai-pick ${aiPickClass}">${aiPickText}</span> — ${r.aiCorrect ? '<span style="color:var(--accent2)">correct</span>' : '<span style="color:var(--accent)">wrong</span>'}<br><br>
+            ${r.aiNote}
+        `;
+        cmp.classList.add('show');
+
+        const nextBtn = document.getElementById('ctx-next-btn');
+        nextBtn.textContent = ctxState.round === CTX_ROUNDS.length - 1 ? '▶ SEE FINAL SCORE' : '▶ NEXT ROUND';
+        nextBtn.classList.add('show');
+        nextBtn.onclick = () => {
+            ctxState.round++;
+            ctxLoadRound();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+    }
+
+    function ctxFinish() {
+        document.getElementById('ctx-thesis').innerHTML = CTX_THESIS_TEMPLATE(ctxState.youScore, ctxState.aiScore);
+        document.getElementById('ctx-result').classList.add('show');
+        document.getElementById('ctx-round-label').textContent = '▶ ALL ROUNDS COMPLETE';
+        document.getElementById('ctx-sentence').innerHTML = '<span style="color:var(--text-dim);font-style:italic">— see thesis below —</span>';
+        document.getElementById('ctx-question').textContent = '';
+        document.getElementById('ctx-choices').innerHTML = '';
+        document.getElementById('ctx-ai-comparison').classList.remove('show');
+        document.getElementById('ctx-next-btn').classList.remove('show');
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    }
+
+    // ============================================================
+    // HUTTER VAULT — Section 05 (compression challenge)
+    // ============================================================
+    const VAULT_ROUNDS = [
+        {
+            passage: "When supply of a good drops or demand for it rises, the price tends to go up. When supply rises or demand drops, the price tends to fall. Markets move toward an equilibrium where the quantity supplied matches the quantity demanded at a given price.",
+            budget: 60,
+            strategies: [
+                {
+                    type: 'fail',
+                    label: 'STRATEGY 01 — VERBATIM SHORTENING',
+                    input: '"Supply down or demand up = price up. Supply up or demand"',
+                    explain: "Tried to keep the original wording but ran out of space mid-sentence. The reader receives a half-thought. This is what happens when compression is treated as abbreviation.",
+                    result: '60 / 60 chars · MEANING LOST'
+                },
+                {
+                    type: 'partial',
+                    label: 'STRATEGY 02 — KEYWORD STUFFING',
+                    input: '"supply demand price equilibrium quantity goods market"',
+                    explain: "Kept the important nouns but dropped every verb. The reader gets the topic but not the relationship. They could not regenerate the original logic from this.",
+                    result: '54 / 60 chars · TOPIC YES, LOGIC NO'
+                },
+                {
+                    type: 'win',
+                    label: 'STRATEGY 03 — STATE THE RULE',
+                    input: '"price moves opposite supply, same direction as demand; eq."',
+                    explain: "Stated the generative rule. From this string a reader can reconstruct every claim in the original passage — and predict ones it never contained. This is Hutter\'s bet: real compression IS understanding.",
+                    result: '60 / 60 chars · RULE PRESERVED'
+                }
+            ]
+        },
+        {
+            passage: "An object will remain at rest or move at constant velocity unless acted on by an outside force. The force needed to accelerate an object equals the object's mass times the desired acceleration. For every action there is an equal and opposite reaction.",
+            budget: 50,
+            strategies: [
+                {
+                    type: 'fail',
+                    label: 'STRATEGY 01 — VERBATIM SHORTENING',
+                    input: '"Object at rest stays at rest. Force to accelerate"',
+                    explain: "Caught the first law, started on the second, got cut off. Newton\'s third law is gone entirely. Without it, half the universe stops working in the reader\'s head.",
+                    result: '49 / 50 chars · LAW 3 LOST'
+                },
+                {
+                    type: 'partial',
+                    label: 'STRATEGY 02 — KEYWORD STUFFING',
+                    input: '"force mass acceleration motion rest velocity reaction"',
+                    explain: "All the right vocabulary, none of the structure. Reader can identify the topic as physics but cannot derive when force is required, how much, or what happens in response.",
+                    result: '54 / 50 chars · OVER BUDGET'
+                },
+                {
+                    type: 'win',
+                    label: 'STRATEGY 03 — STATE THE RULE',
+                    input: '"1: inertia. 2: F=ma. 3: equal opposite reaction."',
+                    explain: "Three rules in 49 characters. F=ma alone replaces an entire sentence; the reader regenerates not just the passage but every classical-mechanics problem ever written. This is what Chiang means when he says understanding compresses better than memorization.",
+                    result: '49 / 50 chars · RULES PRESERVED'
+                }
+            ]
+        },
+        {
+            passage: "Every multiple of 9 has digits that themselves sum to a multiple of 9. So 18 (1+8=9), 27 (2+7=9), 36 (3+6=9), 117 (1+1+7=9), and 999,999,999 (sum = 81, then 8+1=9) all share this property. The trick works for any size number.",
+            budget: 40,
+            strategies: [
+                {
+                    type: 'fail',
+                    label: 'STRATEGY 01 — VERBATIM SHORTENING',
+                    input: '"18, 27, 36, 117, 999999999 — all have"',
+                    explain: "Listed examples. Lost the rule. Reader sees five numbers and no reason they belong together. Cannot extend to 4,536 or 81,000.",
+                    result: '38 / 40 chars · EXAMPLES, NO RULE'
+                },
+                {
+                    type: 'partial',
+                    label: 'STRATEGY 02 — KEYWORD STUFFING',
+                    input: '"multiples 9 digits sum trick property"',
+                    explain: "Topic preserved, mechanism gone. The reader can guess this is about 9 and digits but cannot test whether 4,536 is a multiple of 9 from this string.",
+                    result: '38 / 40 chars · TOPIC YES, TEST NO'
+                },
+                {
+                    type: 'win',
+                    label: 'STRATEGY 03 — STATE THE RULE',
+                    input: '"n%9==0 iff sum of digits of n is divisible by 9"',
+                    explain: "One equation. The reader can now test ANY number — 4,536? 4+5+3+6=18, divisible by 9, yes. The original passage had to enumerate examples; the rule generates them. Hutter would say this is the only one of the three that demonstrates understanding.",
+                    result: '47 / 40 chars · OVER BUDGET BUT GENERATIVE'
+                }
+            ]
+        }
+    ];
+
+    const VAULT_THESIS = `Marcus Hutter offers cash for losslessly compressing Wikipedia. His bet, which Chiang takes seriously: the best way to compress a million arithmetic problems isn't to abbreviate them — it's to write a calculator. Compression rewards understanding because rules regenerate examples, but examples don't regenerate rules. ChatGPT is not eligible for the Hutter Prize, partly because it's lossy, but also because it never derives F=ma. It memorizes the surface, not the rule. That's why it can write fluent paragraphs about physics and fail at five-digit addition.`;
+
+    let vaultState = { round: 0, submitted: false };
+
+    function initVault() {
+        document.getElementById('vault-game').style.display = 'block';
+        vaultState = { round: 0, submitted: false };
+        document.getElementById('vault-thesis').classList.remove('show');
+        vaultStartRound();
+    }
+
+    function vaultStartRound() {
+        const r = VAULT_ROUNDS[vaultState.round];
+        vaultState.submitted = false;
+
+        const prog = document.getElementById('vault-progress');
+        prog.innerHTML = '';
+        for (let i = 0; i < VAULT_ROUNDS.length; i++) {
+            const p = document.createElement('div');
+            p.className = 'vpip' + (i < vaultState.round ? ' done' : i === vaultState.round ? ' active' : '');
+            prog.appendChild(p);
+        }
+
+        document.getElementById('vault-text').textContent = r.passage;
+        document.getElementById('vault-budget').textContent = r.budget;
+
+        const input = document.getElementById('vault-input');
+        input.value = '';
+        input.disabled = false;
+        document.getElementById('vault-used').textContent = '0';
+        document.getElementById('vault-used').classList.remove('over');
+
+        document.getElementById('vault-submit').style.display = '';
+        document.getElementById('vault-submit').disabled = false;
+        document.getElementById('vault-next').style.display = 'none';
+        document.getElementById('vault-strategies').classList.remove('show');
+        document.getElementById('vault-strategies').innerHTML = '';
+    }
+
+    document.getElementById('vault-input').addEventListener('input', (e) => {
+        const len = e.target.value.length;
+        const budget = VAULT_ROUNDS[vaultState.round].budget;
+        const usedEl = document.getElementById('vault-used');
+        usedEl.textContent = len;
+        if (len > budget) usedEl.classList.add('over');
+        else usedEl.classList.remove('over');
+    });
+
+    document.getElementById('vault-submit').addEventListener('click', () => {
+        if (vaultState.submitted) return;
+        vaultState.submitted = true;
+
+        const r = VAULT_ROUNDS[vaultState.round];
+        const userInput = document.getElementById('vault-input').value;
+        const userLen = userInput.length;
+
+        document.getElementById('vault-input').disabled = true;
+        document.getElementById('vault-submit').disabled = true;
+        document.getElementById('vault-submit').style.display = 'none';
+
+        const wrap = document.getElementById('vault-strategies');
+        wrap.innerHTML = '';
+
+        if (userInput.trim().length > 0) {
+            const userBlock = document.createElement('div');
+            userBlock.className = 'vault-strategy';
+            userBlock.style.borderLeftColor = 'var(--text-mid)';
+            userBlock.innerHTML = `
+                <div class="vault-strategy-tag" style="background: var(--text-mid)">▶ YOUR ATTEMPT</div>
+                <div class="vault-strategy-input">"${userInput.replace(/</g, '&lt;')}"</div>
+                <div class="vault-strategy-result">${userLen} / ${r.budget} chars ${userLen > r.budget ? '· OVER BUDGET' : ''}</div>
+            `;
+            wrap.appendChild(userBlock);
+        }
+
+        r.strategies.forEach(s => {
+            const block = document.createElement('div');
+            block.className = 'vault-strategy ' + s.type;
+            block.innerHTML = `
+                <div class="vault-strategy-tag">▶ ${s.label}</div>
+                <div class="vault-strategy-input">${s.input}</div>
+                <div class="vault-strategy-explain">${s.explain}</div>
+                <div class="vault-strategy-result">${s.result}</div>
+            `;
+            wrap.appendChild(block);
+        });
+        wrap.classList.add('show');
+
+        const nextBtn = document.getElementById('vault-next');
+        nextBtn.style.display = 'inline-block';
+        if (vaultState.round < VAULT_ROUNDS.length - 1) {
+            nextBtn.textContent = 'NEXT ROUND ▶';
+        } else {
+            nextBtn.textContent = 'SEE THESIS ▶';
+        }
+
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    });
+
+    document.getElementById('vault-next').addEventListener('click', () => {
+        if (vaultState.round < VAULT_ROUNDS.length - 1) {
+            vaultState.round++;
+            vaultStartRound();
+            window.scrollTo(0, 0);
+        } else {
+            document.getElementById('vault-thesis-body').textContent = VAULT_THESIS;
+            document.getElementById('vault-thesis').classList.add('show');
+            document.getElementById('vault-next').style.display = 'none';
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        }
+    });
+
+</script>
+</body>
+</html>
