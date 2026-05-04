@@ -681,11 +681,11 @@
 <!-- HOME -->
 <div id="home">
     <div class="home-header">
-        <h1>THE BLURRY JPEG</h1>
-        <div style="font-size:9px;color:var(--text-dim);line-height:2;margin-top:0.8rem;letter-spacing:0.05em;">what gets lost in “lossless” compression</div>
+        <h1>The Blurry JPEG</h1>
+        <div style="font-size:9px;color:var(--text-dim);line-height:2;margin-top:0.8rem;letter-spacing:0.05em;">Mini games about algorithmic bias, AI hallucination, and generalization of LLMs.</div>
     </div>
 
-    <div class="select-label">▶ SELECT PROMPT</div>
+    <div class="select-label">▶ SELECT GAME</div>
 
     <div class="card-grid">
         <div class="game-card pixel-border" onclick="loadGame('spot')">
@@ -733,7 +733,7 @@
     <!-- SPOT -->
     <div id="spot-game" style="display:none">
         <div class="game-card-header pixel-border-dim">
-            <div class="prompt-label">PROMPT 01</div>
+            <div class="prompt-label">GAME 01</div>
             <div class="prompt-text">"describe the smell of rain"</div>
         </div>
         <p class="spot-intro">Two responses below - one human, one AI.<br>Click the words in paragraph B that feel compressed or averaged.<br>You have 4 to find.</p>
@@ -772,7 +772,7 @@
     <!-- HUB: whose language counts -->
     <div id="hub-view" style="display:none">
         <div class="game-card-header pixel-border-dim" style="margin-bottom:1.5rem">
-            <div class="prompt-label">SECTION 02</div>
+            <div class="prompt-label">GAME 02</div>
             <div class="prompt-text">what can we assume?</div>
         </div>
         <p class="spot-intro" style="margin-bottom:1.5rem">Algorithmic bias is not just a technical error, but a reflection of patterns learned from socially shaped data. Even when sensitive attributes are removed, AI systems can rely on proxy signals that reproduce similar inequalities. This means bias can emerge indirectly through structure rather than explicit intent. As a result, “neutral” models may still produce unfair outcomes.</p>
@@ -837,10 +837,10 @@
     <!-- COUNT THE LIMBS -->
     <div id="limbs-game" style="display:none">
         <div class="game-card-header pixel-border-dim">
-            <div class="prompt-label">PROMPT 03</div>
+            <div class="prompt-label">GAME 03</div>
             <div class="prompt-text">count what's wrong with the body</div>
         </div>
-        <p class="spot-intro">Hito Steyerl writes about Stable Diffusion 3 producing bodies that look like "almost-medieval monsters" — extra fingers, fused joints, multiple faces. The errors aren't bugs. They're the model averaging billions of images into a statistical shape that <em>almost</em> looks like a person.<br><br>Click the body parts that look wrong. 4 errors per round. 2 rounds.</p>
+        <p class="spot-intro"><p class="spot-intro">Hito Steyerl's article showcases how AI generalizations and hallucinations aren't just text-related problems but visual ones too. AI image generators don't produce their own images, they average billions of images from their training data into a single output that statistically resembles the prompt. This as a result sometimes produces flaws/bugs in the images created even though the AI thinks it is correct. In this particular case regarding human bodies that Steyerl writes about, the averaging done sometimes results in eerie distortions that highlight such problems with generative AI.<br><br>Click the body parts that look wrong. 4 errors per round. 2 rounds.</p>
 
         <div class="limbs-round-tabs">
             <button class="limbs-tab active" data-round="1">▶ ROUND 1 — KNUCKLEPORN</button>
@@ -880,7 +880,7 @@
     <!-- CONTEXT COLLAPSE — Section 04 -->
     <div id="context-game" style="display:none">
         <div class="game-card-header pixel-border-dim">
-            <div class="prompt-label">PROMPT 04</div>
+            <div class="prompt-label">GAME 04</div>
             <div class="prompt-text">"what does 'it' refer to?"</div>
         </div>
         <p class="spot-intro">Hubert Dreyfus argued that computers can't generalize like humans because they have no <em>body</em> and no <em>world</em> — they only have statistics about what words tend to follow what other words.<br><br>You'll get 5 sentences. Each has an ambiguous "it." You need a body that knows what trophies, suitcases, and ice are made of. The AI doesn't.<br><br>You vs. the LLM. Best of 5.</p>
@@ -922,7 +922,7 @@
     <!-- HUTTER VAULT — Section 05 -->
     <div id="vault-game" style="display:none">
         <div class="game-card-header pixel-border-dim">
-            <div class="prompt-label">PROMPT 05</div>
+            <div class="prompt-label">GAME 05</div>
             <div class="prompt-text">compress the passage into the budget — your reader will reconstruct it</div>
         </div>
         <p class="predict-intro">Marcus Hutter offers a cash prize for losslessly compressing Wikipedia. He believes real compression requires real understanding — because the best way to shrink a million arithmetic problems isn't to abbreviate them, it's to write a calculator.<br><br>3 rounds. Compress each passage so a reader could regenerate the meaning. Then see how three strategies stack up against yours.</p>
