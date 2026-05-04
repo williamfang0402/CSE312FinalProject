@@ -682,7 +682,7 @@
 <div id="home">
     <div class="home-header">
         <h1>WHAT THE MACHINE LEARNED</h1>
-        <div style="font-size:9px;color:var(--text-dim);line-height:2;margin-top:0.8rem;letter-spacing:0.05em;">games about AI bias, compression, and what gets averaged away</div>
+        <div style="font-size:9px;color:var(--text-dim);line-height:2;margin-top:0.8rem;letter-spacing:0.05em;">what gets lost in “lossless” compression</div>
     </div>
 
     <div class="select-label">▶ SELECT PROMPT</div>
@@ -697,9 +697,9 @@
 
         <div class="game-card pixel-border" onclick="loadHub()">
             <div class="card-num">02</div>
-            <div class="card-title">whose language counts as correct?</div>
+            <div class="card-title">what can we assume?</div>
             <div class="card-divider"></div>
-            <div class="card-tag">◆ 4 GAMES — LANGUAGE & RACE BIAS</div>
+            <div class="card-tag">◆ BIASED BY DESIGN</div>
         </div>
 
         <div class="game-card pixel-border" onclick="loadGame('limbs')">
@@ -773,19 +773,13 @@
     <div id="hub-view" style="display:none">
         <div class="game-card-header pixel-border-dim" style="margin-bottom:1.5rem">
             <div class="prompt-label">SECTION 02</div>
-            <div class="prompt-text">whose language counts as correct?</div>
+            <div class="prompt-text">what can we assume?</div>
         </div>
-        <p class="spot-intro" style="margin-bottom:1.5rem">Four games about how AI systems learn whose words, names, and bodies are "normal" — and whose are flagged, filtered, or erased.</p>
+        <p class="spot-intro" style="margin-bottom:1.5rem">Algorithmic bias is not just a technical error, but a reflection of patterns learned from socially shaped data. Even when sensitive attributes are removed, AI systems can rely on proxy signals that reproduce similar inequalities. This means bias can emerge indirectly through structure rather than explicit intent. As a result, “neutral” models may still produce unfair outcomes.</p>
         <div class="card-grid">
             <div class="game-card pixel-border" onclick="loadSubGame('predict')">
                 <div class="card-num" style="font-size:13px">02-A</div>
                 <div class="card-title">"is 'he be working' grammatically correct?"</div>
-                <div class="card-divider"></div>
-                <div class="card-tag">◆ PREDICT</div>
-            </div>
-            <div class="game-card pixel-border" onclick="loadSubGame('deshawn')">
-                <div class="card-num" style="font-size:13px">02-B</div>
-                <div class="card-title">résumé: "DeShawn" vs "Greg" — same qualifications</div>
                 <div class="card-divider"></div>
                 <div class="card-tag">◆ PREDICT</div>
             </div>
@@ -795,33 +789,6 @@
                 <div class="card-divider"></div>
                 <div class="card-tag">◆ PREDICT</div>
             </div>
-            <div class="game-card pixel-border" onclick="loadSubGame('recidivism')">
-                <div class="card-num" style="font-size:13px">02-D</div>
-                <div class="card-title">"predict whether this defendant is likely to reoffend"</div>
-                <div class="card-divider"></div>
-                <div class="card-tag">◆ SPOT THE DIFFERENCE</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- PREDICT: DeShawn vs Greg -->
-    <div id="deshawn-game" style="display:none">
-        <div class="game-card-header pixel-border-dim">
-            <div class="prompt-label">PROMPT 02-B</div>
-            <div class="prompt-text">résumé: "DeShawn Washington" vs "Greg Walsh" — identical qualifications</div>
-        </div>
-        <p class="predict-intro">An AI hiring tool rates two identical résumés. Same degree, same GPA, same experience. Only the names differ.<br><br>A 2017 study found AI trained on historical hiring data absorbed the same bias as human hiring managers — Black-coded names called back at roughly half the rate of white-coded names. Which rating did "DeShawn" receive?</p>
-
-        <div class="predict-options" id="deshawn-options"></div>
-
-        <div class="feedback" id="deshawn-feedback">
-            <div class="feedback-label" id="deshawn-feedback-label"></div>
-            <div class="feedback-body" id="deshawn-feedback-body"></div>
-        </div>
-
-        <div class="thesis-block" id="deshawn-thesis">
-            <div class="thesis-label">▶ THESIS</div>
-            <div class="thesis-body" id="deshawn-thesis-body"></div>
         </div>
     </div>
 
@@ -843,44 +810,6 @@
         <div class="thesis-block" id="mathboys-thesis">
             <div class="thesis-label">▶ THESIS</div>
             <div class="thesis-body" id="mathboys-thesis-body"></div>
-        </div>
-    </div>
-
-    <!-- SPOT: recidivism -->
-    <div id="recidivism-game" style="display:none">
-        <div class="game-card-header pixel-border-dim">
-            <div class="prompt-label">PROMPT 02-D</div>
-            <div class="prompt-text">"predict whether this defendant is likely to reoffend"</div>
-        </div>
-        <p class="spot-intro">Two descriptions of how risk-assessment software works — one from a ProPublica investigation, one from an AI explainer.<br>Click the 4 words in paragraph B that make a historically biased system sound like neutral math.</p>
-
-        <div class="score-bar">
-            FOUND
-            <div class="score-pips">
-                <div class="pip" id="r1pip1"></div>
-                <div class="pip" id="r1pip2"></div>
-                <div class="pip" id="r1pip3"></div>
-                <div class="pip" id="r1pip4"></div>
-            </div>
-            <span class="hits" id="r1hit-count">0</span> / 4
-        </div>
-
-        <div class="paragraphs">
-            <div class="para-block pixel-border-dim">
-                <div class="para-label">▶ PARAGRAPH A — ProPublica, 2016</div>
-                <div class="para-text" id="r1human-para"></div>
-            </div>
-            <div class="para-block pixel-border-dim">
-                <div class="para-label">▶ PARAGRAPH B — AI explainer</div>
-                <div class="para-text" id="r1ai-para"></div>
-            </div>
-        </div>
-
-        <div class="spot-result" id="r1spot-result">
-            <div class="result-card pixel-border">
-                <div class="result-title">▶ ALL FOUR FOUND</div>
-                <div class="result-body" id="r1spot-thesis"></div>
-            </div>
         </div>
     </div>
 
@@ -1027,7 +956,7 @@
 </div>
 
 <script>
-    const ALL_PANELS = ['spot-game','predict-game','hub-view','deshawn-game','mathboys-game','recidivism-game','limbs-game','context-game','vault-game'];
+    const ALL_PANELS = ['spot-game','predict-game','hub-view','mathboys-game','limbs-game','context-game','vault-game'];
 
     function hideAllPanels() {
         ALL_PANELS.forEach(id => {
@@ -1075,9 +1004,7 @@
         _backToHub = 'hub-view';
         hideAllPanels();
         if (id === 'predict') initPredict();
-        if (id === 'deshawn') initDeshawn();
         if (id === 'mathboys') initMathboys();
-        if (id === 'recidivism') initRecidivism();
         window.scrollTo(0, 0);
     }
 
@@ -1210,71 +1137,21 @@
         document.getElementById('predict-thesis').classList.add('show');
     }
 
-    const deshawnOptions = [
-        {
-            text: '"DeShawn Washington" — Strong candidate. Well-qualified. Recommend for interview. Confidence: 91%\n"Greg Walsh" — Strong candidate. Well-qualified. Recommend for interview. Confidence: 93%',
-            correct: false,
-            feedback: 'Close — but the gap is bigger than this. Studies find AI hiring tools trained on historical data reproduce callback disparities far wider than 2 percentage points.'
-        },
-        {
-            text: '"DeShawn Washington" — Candidate shows potential but may benefit from additional experience. Recommend holding. Confidence: 61%\n"Greg Walsh" — Strong candidate. Well-qualified. Recommend for interview. Confidence: 89%',
-            correct: true,
-            feedback: 'This matches the pattern. The résumés are identical. Only the name changed. The AI rated "DeShawn" as needing more experience that "Greg" demonstrably does not have more of.'
-        },
-        {
-            text: 'The AI flagged this comparison as a fairness test and declined to rate either candidate until demographic information was removed from both résumés.',
-            correct: false,
-            feedback: 'This would be ideal — but AI hiring tools don\'t flag their own bias. They produce confident scores without noticing the name is doing work the qualifications aren\'t.'
-        }
-    ];
-
-    const DESHAWN_THESIS = `The name "DeShawn" is not in the algorithm. Neither is race. What is in the algorithm is every hiring decision in its training data — and in that data, Black-coded names were called back at roughly half the rate of white-coded names. Johnson calls this truly implicit bias: the stereotype is never written as a rule, but the algorithm acts as if it were. The AI doesn't know it learned to do this. It just learned what "qualified" looked like, historically. And historically, qualified looked like Greg.`;
-
-    function initDeshawn() {
-        document.getElementById('deshawn-game').style.display = 'block';
-        document.getElementById('deshawn-feedback').classList.remove('show');
-        document.getElementById('deshawn-thesis').classList.remove('show');
-        const container = document.getElementById('deshawn-options');
-        container.innerHTML = '';
-        const shuffled = [...deshawnOptions].sort(() => Math.random() - 0.5);
-        shuffled.forEach(opt => {
-            const btn = document.createElement('button');
-            btn.className = 'predict-opt';
-            btn.textContent = opt.text;
-            btn.onclick = () => selectDeshawn(opt, shuffled);
-            container.appendChild(btn);
-        });
-    }
-
-    function selectDeshawn(chosen, all) {
-        document.querySelectorAll('#deshawn-options .predict-opt').forEach((b, i) => {
-            b.classList.add(all[i].correct ? 'revealed-correct' : 'wrong');
-            b.disabled = true;
-        });
-        const label = document.getElementById('deshawn-feedback-label');
-        label.textContent = chosen.correct ? '▶ CORRECT' : '▶ NOT QUITE';
-        label.className = 'feedback-label ' + (chosen.correct ? 'correct' : 'wrong');
-        document.getElementById('deshawn-feedback-body').textContent = chosen.feedback;
-        document.getElementById('deshawn-feedback').classList.add('show');
-        document.getElementById('deshawn-thesis-body').textContent = DESHAWN_THESIS;
-        document.getElementById('deshawn-thesis').classList.add('show');
-    }
-
     const mathboysOptions = [
         {
             text: 'Research suggests boys tend to outperform girls in math due to a combination of factors including differences in spatial reasoning development, socialization patterns, and historical underrepresentation of women in STEM fields.',
             correct: true,
-            feedback: 'This is what the AI said — and notice what it did. It accepted the premise ("boys tend to outperform") and explained it. The question assumed a fact. The AI sourced the fact from data that reflects bias, then cited that data as evidence.'
+            feedback: 'This is the AI output. It accepted the premise ("boys tend to outperform") and explained it. The question assumed a fact. The AI sourced the fact from data that reflects bias, then cited that data as evidence.'
         },
         {
             text: 'The premise of this question isn\'t supported by current research. Studies consistently show no significant innate difference in math ability between boys and girls. Observed gaps are better explained by stereotype threat, unequal encouragement, and biased assessment.',
             correct: false,
-            feedback: 'This would be the more accurate answer — but it requires the AI to push back on the question\'s framing. Most AI systems don\'t do that by default. They answer what was asked.'
+            feedback: 'This would be the more accurate answer, but it requires the AI to push back on the question\'s framing. Most AI systems don\'t do that by default. They answer what was asked.'
         },
         {
             text: 'I can\'t answer questions that make assumptions about gender differences in ability, as these can reinforce harmful stereotypes.',
             correct: false,
-            feedback: 'The AI didn\'t refuse. It explained. The bias isn\'t in refusing to engage — it\'s in engaging with a false premise as if it were true, and explaining it with statistics that reflect historical discrimination.'
+            feedback: 'The AI didn\'t refuse, it explained. The bias isn\'t in refusing to engage, it\'s in engaging with a false premise as if it were true and explaining it with statistics that reflect historical discrimination.'
         }
     ];
 
@@ -1310,45 +1187,8 @@
         document.getElementById('mathboys-thesis').classList.add('show');
     }
 
-    const r1humanText = `The software was nearly twice as likely to falsely flag Black defendants as future criminals compared to white defendants. White defendants who went on to commit new crimes were mislabeled low-risk almost twice as often as Black defendants. The algorithm had no explicit race variable. It didn't need one.`;
-
-    const r1aiSegments = [
-        { text: 'Risk assessment tools use ', clickable: false },
-        { text: 'objective', clickable: true, dead: true },
-        { text: ' criteria drawn from ', clickable: false },
-        { text: 'evidence-based', clickable: true, dead: true },
-        { text: ' research to produce ', clickable: false },
-        { text: 'standardized', clickable: true, dead: true },
-        { text: ' scores that help courts make ', clickable: false },
-        { text: 'data-driven', clickable: true, dead: true },
-        { text: ' sentencing decisions.', clickable: false },
-    ];
-
-    const R1_THESIS = `"Objective," "evidence-based," "standardized," "data-driven" — four words that mean the same thing: trust the algorithm. But the ProPublica investigation found that COMPAS, the most widely used recidivism tool, was nearly twice as likely to falsely flag Black defendants as high-risk. No race variable in the code. Just zip codes, prior arrests, employment history — all of which correlate with race in a society shaped by discriminatory policing and structural inequality. Johnson calls these proxy attributes: innocuous on their face, doing discriminatory work beneath it. The AI explainer's four words don't lie. They just don't know what they're describing.`;
 
     let r1Hits = 0, r1Done = false;
-
-    function initRecidivism() {
-        document.getElementById('recidivism-game').style.display = 'block';
-        r1Hits = 0; r1Done = false;
-        document.getElementById('r1hit-count').textContent = '0';
-        document.getElementById('r1spot-result').classList.remove('show');
-        for (let i = 1; i <= 4; i++) document.getElementById('r1pip' + i).classList.remove('filled');
-
-        document.getElementById('r1human-para').textContent = r1humanText;
-
-        const el = document.getElementById('r1ai-para');
-        el.innerHTML = '';
-        r1aiSegments.forEach(seg => {
-            if (!seg.clickable) { el.appendChild(document.createTextNode(seg.text)); return; }
-            const span = document.createElement('span');
-            span.className = 'clickable';
-            span.textContent = seg.text;
-            span.dataset.dead = seg.dead;
-            span.onclick = () => handleR1Click(span);
-            el.appendChild(span);
-        });
-    }
 
     function handleR1Click(span) {
         if (r1Done || span.classList.contains('hit') || span.classList.contains('miss')) return;
